@@ -1,35 +1,27 @@
-name: PR Diff Check
+name: PR File Diff Check After Merge
 
 on:
   pull_request:
-    branches:
-      - develop
-      - main
-  workflow_dispatch: # to manually trigger the workflow if needed
+    types:
+      - closed
+  workflow_dispatch:
+    
 
 jobs:
   diff-check:
-    name: Check diff between pre and post merge
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
+    name: Check diff in files after PR merge to develop
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout PR branch
+      # Checkout the develop branch and fetch history
+      - name: Checkout base branch (develop)
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: develop
+          fetch-depth: 0
 
-      - name: Display git diff before merge
-        run: git diff origin/${{ github.event.pull_request.base.ref }}
+      # Show the diff in files after the PR is merged
+      - name: Show file differences after merge
+        run: git diff --name-only HEAD~1 HEAD
 
-      - name: Merge PR branch to base
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git checkout ${{ github.event.pull_request.base.ref }}
-          git merge --no-ff ${{ github.event.pull_request.head.ref }}
-
-      - name: Display git diff after merge
-        run: git diff origin/${{ github.event.pull_request.base.ref }}
-
-      - name: Output success message
-        run: echo "Diff check completed!"
