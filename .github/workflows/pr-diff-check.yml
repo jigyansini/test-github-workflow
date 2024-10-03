@@ -23,5 +23,5 @@ jobs:
 
       # Show the diff in files after the PR is merged
       - name: Show file differences after merge
-        run: git diff --name-only HEAD~1 HEAD
+        run: git diff --name-status HEAD~1 HEAD
 
