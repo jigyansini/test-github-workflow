@@ -1,0 +1,35 @@
+name: PR Diff Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch: # to manually trigger the workflow if needed
+
+jobs:
+  diff-check:
+    name: Check diff between pre and post merge
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Display git diff before merge
+        run: git diff origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Merge PR branch to base
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git checkout ${{ github.event.pull_request.base.ref }}
+          git merge --no-ff ${{ github.event.pull_request.head.ref }}
+
+      - name: Display git diff after merge
+        run: git diff origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Output success message
+        run: echo "Diff check completed!"
